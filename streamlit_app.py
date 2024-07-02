@@ -35,7 +35,4 @@ if prompt:=st.text_input("Prompt", placeholder="Describe the image you want to g
             st.markdown(f"![{prompt}](https://image.pollinations.ai/prompt/{quote(prompt)}?model={model}&width={width}&height={width}&seed={seed}&nologo=poll&nofeed=yes)")
             
         st.caption(prompt)
-        
-    # st.button("Download", type="secondary", on_click=lambda:img.save(prompt.replace(" ", "_")+".jpg"))
-    
     wait_seconds("Cooldown 10s", 10)
