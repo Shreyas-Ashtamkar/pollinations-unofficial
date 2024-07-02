@@ -10,7 +10,6 @@ with st.sidebar:
     height = st.slider("**Image Height**", min_value=100, max_value=2048, value=1024)
     width  = st.slider("**Image Width**", min_value=100, max_value=2048, value=1024)
     seed   = st.text_input("**Seed**", value="-1").strip()
-    nologo = st.checkbox("No Logo", value=True)
 
 ai: object = pollinations.Model()
 
