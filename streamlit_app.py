@@ -1,40 +1,34 @@
-import altair as alt
-import numpy as np
-import pandas as pd
+import pollinations
 import streamlit as st
+from time import sleep, time
 
-"""
-# Welcome to Streamlit!
+from utils import local_storage, wait_seconds
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+with st.sidebar:
+    st.header("Options")
+    model  = st.radio("**Options**", options=pollinations.models)
+    height = st.slider("**Image Height**", min_value=100, max_value=2048, value=1024)
+    width  = st.slider("**Image Width**", min_value=100, max_value=2048, value=1024)
+    seed   = st.text_input("**Seed**", value="-1").strip()
+    nologo = st.checkbox("No Logo", value=True)
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+ai: object = pollinations.Model()
 
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
+st.title("Pollinations AI", anchor="https://pollinations.ai/")
 
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
+st.text("Enter a prompt to generate an Image. Enter as many details as possible.")
 
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
-
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
-
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+if prompt:=st.text_input("Prompt", placeholder="Describe the image you want to generate."):
+    with st.container(border=True):
+        img = ai.generate(
+            prompt=prompt,
+            model=model,
+            width=width,
+            height=height,
+            seed = 'random' if seed == '-1' else int(seed),
+        )
+        st.image(image=img.binary)
+        st.caption(prompt)
+    # st.button("Download", type="secondary", on_click=lambda:img.save(prompt.replace(" ", "_")+".jpg"))
+    
+    wait_seconds("Cooldown 10s", 10)
