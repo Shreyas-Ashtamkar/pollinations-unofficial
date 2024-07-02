@@ -25,20 +25,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.REGISTRY_TOKEN }}
-    - 
-        name: set lower case repo name
-        run: |
-          echo "REPO_NAME_LC=${REPO_NAME,,}" >>${GITHUB_ENV}
-        env:
-          REPO_NAME: '${{ github.repository }}'
     -
         name: Pre-build dev container image
         uses: devcontainers/ci@v0.2
         with:
-          run: echo 'REPO_NAME_LC'
           subFolder: .github
-          imageName: ghcr.io/${REPO_NAME_LC}
-          cacheFrom: ghcr.io/${REPO_NAME_LC}
+          imageName: ghcr.io/shreyas-ashtamkar/pollinations-unofficial
+          cacheFrom: ghcr.io/shreyas-ashtamkar/pollinations-unofficial
           push: always
-        env:
-          REPO_NAME_LC: '${REPO_NAME_LC}'
