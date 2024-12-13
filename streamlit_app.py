@@ -49,26 +49,25 @@ except Exception as e:
 
 st.title("Pollinations AI", anchor="https://pollinations.ai/")
 
-st.text("Enter a prompt to generate an Image. Elaborate the scenary as much as possible.")
+st.write("Enter a prompt to generate an Image. Elaborate the scenary as much as possible.")
 
-if prompt:=st.text_input("Prompt", placeholder="Describe the image you want to generate."):
-    with st.container(border=True):
-        try:
-            img = ai.generate(
-                prompt=prompt,
-                model=model,
-                width=width,
-                height=st.session_state.img_height,
-                seed = 'random' if seed == '-1' else int(seed),
-            )
-            
-            
-            
-            st.image(image=img)
-        except Exception as e:
-            print(e)
-            st.toast(e.__str__())
-            st.markdown(f"![{prompt}](https://image.pollinations.ai/prompt/{quote(prompt)}?model={model}&width={width}&height={width}&seed={seed}&nologo=poll&nofeed=yes)")
-            
-        st.caption(prompt)
-    wait_seconds("Cooldown 10s", 10)
+if 'text_input_locked' not in st.session_state:
+    st.session_state.text_input_locked = False
+
+def toggle_input_prompt_lock():
+    st.session_state.text_input_locked = not st.session_state.text_input_locked
+    print(st.session_state.text_input_locked)
+
+if prompt:=st.text_input("Prompt", placeholder="Describe the image you want to generate.", disabled=st.session_state.text_input_locked, key='text_input'):
+    if not st.session_state.text_input_locked:
+        toggle_input_prompt_lock()
+        
+        with st.container(border=True):
+            st.markdown(f"![{prompt}](https://image.pollinations.ai/prompt/{quote(prompt)}?model={model}&width={width}&height={st.session_state.img_height}&seed={seed}&nologo=poll&nofeed=yes)")
+            st.caption(prompt)
+
+        wait_seconds("Cooldown 10s", 10)
+        
+        toggle_input_prompt_lock()
+
+#TODO : Fix the line 61 to work 
