@@ -1,6 +1,7 @@
 # import pollinations
 # import pollinations.models
-from pollinations.models import ImageModel
+import pollinations
+from pollinations import ImageModel
 import streamlit as st
 from time import sleep, time
 from urllib.parse import quote
@@ -9,7 +10,7 @@ from utils import local_storage, wait_seconds
 
 with st.sidebar:
     st.header("Options")
-    model  = st.radio("**Models**", options=ImageModel.models)
+    model  = st.radio("**Models**", options=pollinations.image_models())
     height = st.slider("**Image Height**", min_value=100, max_value=2048, value=128)
     width  = st.slider("**Image Width**", min_value=100, max_value=2048, value=128)
     seed   = st.text_input("**Seed**", value="-1").strip()
