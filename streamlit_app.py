@@ -1,7 +1,7 @@
 # import pollinations
 # import pollinations.models
 import pollinations
-from pollinations import ImageModel
+from pollinations import Image #, Text, Async
 import streamlit as st
 from time import sleep, time
 from urllib.parse import quote
@@ -14,6 +14,8 @@ IMAGE_SIZE_STEP = 128
 IMAGE_SIZE_MIN = 128
 IMAGE_SIZE_MAX = 2048
 
+local_storage.setItem("generate_image_prompt", None)
+
 with st.sidebar:
     width  = 256
     
@@ -22,7 +24,7 @@ with st.sidebar:
         st.session_state.aspect_ratio = st.session_state.img_height/width
         
     st.header("Options")
-    model  = st.radio("**Models**", options=pollinations.image_models())
+    model  = st.radio("**Models**", options=pollinations.Image.models())
         
     lock_aspect_ratio = st.checkbox(f"Lock aspect ratio")
                 
@@ -42,11 +44,6 @@ with st.sidebar:
 
     seed   = st.text_input("**Seed**", value="-1").strip()
 
-try:
-    ai: object = ImageModel()
-except Exception as e:
-    print(e.__str__())
-
 st.title("Pollinations AI", anchor="https://pollinations.ai/")
 
 st.write("Enter a prompt to generate an Image. Elaborate the scenary as much as possible.")
@@ -54,20 +51,29 @@ st.write("Enter a prompt to generate an Image. Elaborate the scenary as much as 
 if 'text_input_locked' not in st.session_state:
     st.session_state.text_input_locked = False
 
-def toggle_input_prompt_lock():
-    st.session_state.text_input_locked = not st.session_state.text_input_locked
-    print(st.session_state.text_input_locked)
+def generate(prompt:str, model:str, width:int, height:int,seed:int, nologo:str="poll", private:bool=True, nonsfw:bool=True):
+    local_storage.setItem("generate_image_prompt", f"https://image.pollinations.ai/prompt/{quote(prompt)}?model={model}&width={width}&height={height}&seed={seed}&nologo={nologo}&private={private}&safe={nonsfw}")
+    
 
-if prompt:=st.text_input("Prompt", placeholder="Describe the image you want to generate.", disabled=st.session_state.text_input_locked, key='text_input'):
-    if not st.session_state.text_input_locked:
-        toggle_input_prompt_lock()
-        
-        with st.container(border=True):
-            st.markdown(f"![{prompt}](https://image.pollinations.ai/prompt/{quote(prompt)}?model={model}&width={width}&height={st.session_state.img_height}&seed={seed}&nologo=poll&nofeed=yes)")
-            st.caption(prompt)
+prompt = st.text_input(
+    label="Prompt",
+    placeholder="Describe the image you want to generate.", 
+    key='text_input'
+)
+st.button(
+    label="Generate",
+    key="generate_button", 
+    help="Click on this button to generate the image below", 
+    on_click= lambda : generate(
+        prompt = prompt,
+        model  = model,
+        width  = width,
+        height = st.session_state.img_height,
+        seed   = seed
+    ),
+)
 
-        wait_seconds("Cooldown 10s", 10)
-        
-        toggle_input_prompt_lock()
-
-#TODO : Fix the line 61 to work 
+if img_prompt:=local_storage.getItem("generate_image_prompt"):
+    with st.container(border=True):
+        st.image(img_prompt)
+        st.caption(prompt)
