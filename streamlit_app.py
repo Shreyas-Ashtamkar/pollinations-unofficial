@@ -8,7 +8,11 @@ from urllib.parse import quote
 
 from fractions import Fraction
 
-from utils import local_storage, wait_seconds
+from streamlit_local_storage import LocalStorage
+
+local_storage = LocalStorage()
+
+from utils import wait_seconds
 
 IMAGE_SIZE_STEP = 128
 IMAGE_SIZE_MIN = 128
@@ -75,5 +79,8 @@ st.button(
 
 if img_prompt:=local_storage.getItem("generate_image_prompt"):
     with st.container(border=True):
-        st.image(img_prompt)
-        st.caption(prompt)
+        st.image(
+            image=img_prompt,
+            caption=prompt,
+            use_container_width =True
+        )

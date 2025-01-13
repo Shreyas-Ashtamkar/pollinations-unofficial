@@ -1,8 +1,5 @@
 from time import sleep
 import streamlit as st
-from streamlit_local_storage import LocalStorage
-
-local_storage = LocalStorage()
 
 def wait_seconds(progress_text, seconds):
     seconds -= 1
