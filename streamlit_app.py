@@ -1,3 +1,4 @@
+import json
 import pollinations
 from pollinations import Image #, Text, Async
 import streamlit as st
@@ -8,7 +9,7 @@ from fractions import Fraction
 
 from streamlit_local_storage import LocalStorage
 
-from utils import wait_seconds
+from utils import aggressive_urlencode
 
 IMAGE_SIZE_STEP = 128
 IMAGE_SIZE_MIN = 128
@@ -16,7 +17,7 @@ IMAGE_SIZE_MAX = 2048
 
 local_storage = LocalStorage()
 sleep(0.5)
-local_storage.setItem("generate_image_prompt", None)
+local_storage.setItem("pollination_data", None)
 sleep(0.5)
 
 with st.sidebar:
@@ -44,8 +45,24 @@ st.title("Pollinations AI", anchor="https://pollinations.ai/")
 st.write("Enter a prompt to generate an Image. Elaborate the scenary as much as possible.")
 
 def generate(prompt:str, model:str, width:int, height:int,seed:int, nologo:str="poll", private:bool=True, nonsfw:bool=True):
-    local_storage.setItem("generate_image_prompt", f"https://image.pollinations.ai/prompt/{quote(prompt)}?model={model}&width={width}&height={height}&seed={seed}&nologo={nologo}&private={private}&safe={nonsfw}")
-    
+    local_storage.setItem(
+        "pollination_data", 
+        json.dumps({
+            'prompt'  : prompt,
+            'model'   : model,
+            'width'   : width,
+            'height'  : height,
+            'seed'    : seed,
+            'nologo'  : nologo,
+            'private' : private,
+            'nonsfw'  : nonsfw
+        })
+    )
+
+def get_image(data:dict[str,str]):
+    url = f"https://image.pollinations.ai/prompt/{quote(aggressive_urlencode(data['prompt']))}?model={aggressive_urlencode(data['model'])}&width={data['width']}&height={data['height']}&seed={data['seed']}&nologo={data['nologo']}&private={data['private']}&safe={data['nonsfw']}"
+    print(url)
+    return url
 
 prompt = st.text_input(
     label="Prompt",
@@ -66,13 +83,18 @@ st.button(
     ),
 )
 
-if img_prompt:=local_storage.getItem("generate_image_prompt"):
-    if prompt != "":
+if img_prompt:=local_storage.getItem("pollination_data"):
+    try:
+        img_prompt=json.loads(img_prompt)
+    except Exception as e:
+        print(e)
+        img_prompt = {'prompt':None}
+        
+    if prompt == img_prompt['prompt']:
+        # print("going inside 73", img_prompt)
         with st.container(border=True):
             st.image(
-                image=img_prompt,
+                image=get_image(img_prompt),
                 caption=prompt,
                 use_container_width =True
             )
-    else:
-        local_storage.setItem("generate_image_prompt", None)
